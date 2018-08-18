@@ -8,28 +8,7 @@ import matplotlib.pyplot as plt
 lb = np.array([1, 3, 7, 10, 40, 80])
 freqs = np.array([5, 10, 20, 30, 40, 50, 65])
 
-def impedance_numpy(rho, vp):
-    """
-    Implement the previous impedance function using numpy arrays to make element-by-element multiplication easier
-    """
-    return np.multiply(rho,vp)
-
-def rc_series(z):
-    """
-    Calculating reflection coefficients from a ordered list of impedances
-
-    >>> z = [1,2,3,4,5]
-    >>> test = rc_series(z)
-    >>> len(test) == (len(z) - 1)
-    True
-
-    """
-    z = np.array(z)
-    rc = (z[1:] - z[:-1]) / (z[:-1] + z[1:])
-
-    return rc
-
-def lfBackus(lb,freqs, test = False, log_plot = True, dt = 0.002):
+def lfBackus(lb,freqs, test = False, log_plot = True, dt = 0.002, f = 35):
     """
     Liner & Fei Backus thickness determination via the 'Backus Number.'
 
@@ -108,20 +87,26 @@ def lfBackus(lb,freqs, test = False, log_plot = True, dt = 0.002):
     vs = 1e6 / (3.23084 * dts)
     vp = 1e6 / (3.23084 * dtc)
 
-    # Convert to depth
-    depth_curves = np.array([vp[:-1], vs[:-1], rhob[:-1]])
-    time_curves_wth_basis = [b.transform.depth_to_time(curves, vp[:-1], dz, dt, return_t = True) for curves in depth_curves]
-    twt = time_curves_wth_basis[0][1][:-1]
+    # Convert to time and generate synthetics
     bakus = np.array([b.rockphysics.backus(vp,vs,rhob,i,dz) for i in lb])
-    time_curves_bakus = [bakus[i][0], bakus[i][1], bakus[i][2] for i in range(len(lb)))
+
+    time_curves = [] # should be able to do with all with LC but couldn't get it to work correctly
+    for i in range(len(bakus)):
+        time_curves.append([b.transform.depth_to_time(bakus[i,j,:-1], vp[:-1], dz, dt, return_t=True) for j in range(bakus.shape[1])])
+
+    time_curves = np.array(time_curves)
+    twt = time_curves[0,0,1]
+    rc = np.array([b.reflection.acoustic_reflectivity(time_curves[i,0,0], time_curves[i,2,0]) for i in range(len(lb))])
+
+    wavelet = b.filters.ricker(0.128, dt, f)
+    synth = np.apply_along_axis(lambda r: np.convolve(r, wavelet, mode='same'), axis=1, arr=rc)
 
     vsMin = [np.nanmin(bakus[i][1]) for i in range(len(lb))]
 
+    # Plot everything up
     if log_plot == True:
         plt.figure(figsize=(15,10))
         for i in np.arange(len(lb)):
-            # bakus = b.rockphysics.backus(vp,vs,rhob,lb[i],dz)
-            # vsMin[i]=np.nanmin(bakus[1])
             plt.subplot(1, len(lb), i+1)
             plt.plot(vp,depth,'k',alpha=0.25)
             plt.plot(vs,depth,'k',alpha=0.25)
@@ -134,7 +119,7 @@ def lfBackus(lb,freqs, test = False, log_plot = True, dt = 0.002):
             plt.legend()
         plt.tight_layout()
 
-        f, axarr = plt.subplots(1,2)
+        f, axarr = plt.subplots(nrows=1, ncols=2)
         axarr[1].set_ylim(0,3)
         axarr[1].set_xlim(0,np.max(lb))
         for i in np.arange(len(freqs)):
@@ -173,4 +158,4 @@ def lfBackus(lb,freqs, test = False, log_plot = True, dt = 0.002):
 
     plt.show()
 
-    return time_curves_wth_basis
+    return time_curves, twt, rc, synth
