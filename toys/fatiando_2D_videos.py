@@ -20,8 +20,6 @@ from matplotlib import animation
 import cv2
 import matplotlib.pyplot as plt
 from fatiando.seismic import wavefd
-# from fatiando.vis import mpl
-
 
 fname1 = r'data/vel_z6.25m_x12.5m_exact.segy'
 fname2 = r'data/vp_marmousi-ii.segy'
@@ -130,7 +128,6 @@ for i in range(len(seismogram_list)):
 
 plt.ylim(duration, 0)
 plt.xlim(-800, 5500)
-#plt.xlabel('Apltitude')
 plt.ylabel('TWT (s)')
 plt.tight_layout()
 times = np.linspace(0, dt * maxit, maxit)
