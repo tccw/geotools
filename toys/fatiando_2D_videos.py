@@ -39,11 +39,11 @@ print('The Marmousi velocity model has the shape: ' + str(vp_marmousi.shape))
 # Clipping the model to a sqaure. Seems to break with a rectangle but
 # I've made rectangular models work before... not sure what is wrong.
 
-BP_2004_vpModel_sq = BP_2004_vpModel[0:1910, 0:(0+1910)]
-vp_marmousi_sq = vp_marmousi[:2800, 6500:9300]
+BP_2004_vpModel_sq = BP_2004_vpModel[0:1910, 2000:3910]
+vp_marmousi_sq = vp_marmousi[:2800, 1:2801]
 
-# Downsaplte the square models for faster computing
-src_model = vp_marmousi_sq
+# Downsampled the square models for faster computing
+src_model = BP_2004_vpModel_sq
 dst = src_model
 
 # pyrDown likes integers
@@ -56,7 +56,7 @@ dst = cv2.pyrDown(src_model, (rows/2, cols/2))
 # dst = cv2.pyrDown(dst, (int(dst.shape[0])/2, int(dst.shape[1]/2)))
 
 print('The original model is ' + str(src_model.shape))
-print('The downsaplted model is ' + str(dst.shape))
+print('The downsampled model is ' + str(dst.shape))
 
 
 # ------------------------------------------------------------------------------
@@ -66,20 +66,21 @@ print('The downsaplted model is ' + str(dst.shape))
 
 # Initialize a blank finite-difference grid with a spacing of your choosing
 # shape = BP_2004_vpModel_sq.shape
-shape = dst.shape
-ds = 2.5  # spacing in meters
+shape = BP_2004_vpModel_sq.shape
+ds = 6.25  # spacing in meters
 area = [0, shape[0] * ds, 0, shape[1] * ds]
 
 # Fill the velocity field
 # velocity = BP_2004_vpModel_sq
-velocity = dst
+velocity = BP_2004_vpModel_sq
 
 # Instantiate the source
-fc = 50. # The approximate frequency of the source
-source = [wavefd.GaussSource(700 * ds, 2 * ds, area, shape,  800., fc)]
+fc = 45. # The approximate frequency of the source
+source = [wavefd.GaussSource((velocity.shape[0] / 2) * ds,
+         2 * ds, area, shape,  1000., fc)]
 # source = [wavefd.MexHatSource(950 * ds, 2 * ds, area, shape, 400., fc)]
 dt = wavefd.scalar_maxdt(area, shape, np.max(velocity))
-duration = 3
+duration = 7
 maxit = int(duration / dt)
 
 # Generate the stations and reciever location
@@ -94,12 +95,11 @@ simulation = wavefd.scalar(velocity, area, dt, maxit, source, stations, snapshot
 # Making the animation
 plot_spacing = 250
 
-x = [i[0] for i in stations]
+x = [i[0] for i in stations] # for plotting geophones
 y = [i[1] for i in stations]
 
-
-
 fig = plt.figure(figsize=(10, 8))
+# plt.rc('text', usetex=True)
 plt.subplots_adjust(right=0.98, left=0.11, hspace=0.0, top=0.93)
 plt.subplot2grid((2, 8), (0, 0), colspan=5, rowspan=3)
 plt.imshow(velocity, extent=area, origin='lower',cmap='plasma_r')
@@ -107,13 +107,16 @@ ticksx = plt.gca().get_xticks() / 1000
 ticksy = plt.gca().get_yticks() / 1000
 fig.gca().set_xticklabels(ticksx.astype(float))
 fig.gca().set_yticklabels(ticksy.astype(float))
-plt.colorbar(shrink = 0.59)
+plt.xticks(rotation=45)
+plt.colorbar(shrink = 0.59,label = r'P-velocity $\frac{m}{s}$',
+            orientation = 'horizontal')
+plt.title('2D P-wave simulation', size = 20)
 wavefield = plt.imshow(np.zeros_like(velocity), extent=area,
                        cmap='gray_r', vmin=-300, vmax=300, alpha = 0.6)
 plt.scatter(x,y, color = 'b', marker = 'v', s=100)
 plt.ylim(area[2:][::-1])
-plt.xlabel('x (km)')
-plt.ylabel('z (km)')
+plt.xlabel('x (km)', size = 12)
+plt.ylabel('z (km)', size = 12)
 plt.subplot2grid((2, 8), (0, 5), colspan=3, rowspan=3)
 plt.tick_params(
     axis='x',
@@ -121,7 +124,7 @@ plt.tick_params(
     bottom=False,
     top=False,
     labelbottom=False)
-
+plt.grid(linestyle = '--', alpha = 0.3)
 for i in range(len(seismogram_list)):
     seismogram_list[i], = plt.plot([], [], '-k')
     plt.plot(plot_spacing*i, 0, 'vb', markersize=20)
@@ -129,7 +132,7 @@ for i in range(len(seismogram_list)):
 plt.ylim(duration, 0)
 plt.xlim(-800, 5500)
 plt.ylabel('TWT (s)')
-plt.tight_layout()
+# plt.tight_layout()
 times = np.linspace(0, dt * maxit, maxit)
 
 # This function updates the plot every few timesteps
@@ -143,6 +146,6 @@ def animate(i):
 
 anim = animation.FuncAnimation(
     fig, animate, frames=maxit / snapshots, interval=1)
-# anim.save('p_wave_multi_geoph_Marmousi2_2.5m_.mp4', fps=30, dpi=200, bitrate=4000)
-anim # call the animation function
-plt.show()
+anim.save('p_wave_multi_geoph_BP_6.25m_1.mp4', fps=30, dpi=200, bitrate=4000)
+# anim # call the animation function
+# plt.show()
