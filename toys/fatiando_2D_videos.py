@@ -39,11 +39,11 @@ print('The Marmousi velocity model has the shape: ' + str(vp_marmousi.shape))
 # Clipping the model to a sqaure. Seems to break with a rectangle but
 # I've made rectangular models work before... not sure what is wrong.
 
-BP_2004_vpModel_sq = BP_2004_vpModel[0:1910, 2000:3910]
+BP_2004_vpModel_sq = BP_2004_vpModel[0:1910, :1910]
 vp_marmousi_sq = vp_marmousi[:2800, 1:2801]
 
 # Downsampled the square models for faster computing
-src_model = BP_2004_vpModel_sq
+src_model = vp_marmousi_sq
 dst = src_model
 
 # pyrDown likes integers
@@ -66,34 +66,34 @@ print('The downsampled model is ' + str(dst.shape))
 
 # Initialize a blank finite-difference grid with a spacing of your choosing
 # shape = BP_2004_vpModel_sq.shape
-shape = BP_2004_vpModel_sq.shape
-ds = 6.25  # spacing in meters
+shape = dst.shape
+ds = 2.5  # spacing in meters
 area = [0, shape[0] * ds, 0, shape[1] * ds]
 
 # Fill the velocity field
 # velocity = BP_2004_vpModel_sq
-velocity = BP_2004_vpModel_sq
+velocity = dst
 
 # Instantiate the source
-fc = 45. # The approximate frequency of the source
+fc = 50. # The approximate frequency of the source
 source = [wavefd.GaussSource((velocity.shape[0] / 2) * ds,
          2 * ds, area, shape,  1000., fc)]
 # source = [wavefd.MexHatSource(950 * ds, 2 * ds, area, shape, 400., fc)]
 dt = wavefd.scalar_maxdt(area, shape, np.max(velocity))
-duration = 7
+duration = 3.5
 maxit = int(duration / dt)
 
 # Generate the stations and reciever location
-num_stations = 20
+num_stations = 100
 spac = velocity.shape[0]/num_stations # station spacing
 stations = [[i*spac*ds, 3 * ds] for i in range(1,num_stations)] # geophone coordinates (x,z)
 seismogram_list = ['seis' + str(i) for i in range(1,num_stations)] # Supposed to be for labeling geophones
 
-snapshots = 20  # number of iterations before the plot updates
-simulation = wavefd.scalar(velocity, area, dt, maxit, source, stations, snapshots)
+snapshots = 12  # number of iterations before the plot updates
+simulation = wavefd.scalar(velocity, area, dt, maxit, source, stations, snapshots, padding = 1000, taper = 0.0005)
 
 # Making the animation
-plot_spacing = 250
+plot_spacing = 50
 
 x = [i[0] for i in stations] # for plotting geophones
 y = [i[1] for i in stations]
@@ -113,7 +113,7 @@ plt.colorbar(shrink = 0.59,label = r'P-velocity $\frac{m}{s}$',
 plt.title('2D P-wave simulation', size = 20)
 wavefield = plt.imshow(np.zeros_like(velocity), extent=area,
                        cmap='gray_r', vmin=-300, vmax=300, alpha = 0.6)
-plt.scatter(x,y, color = 'b', marker = 'v', s=100)
+plt.scatter(x,y, color = 'b', marker = 'v', s=60)
 plt.ylim(area[2:][::-1])
 plt.xlabel('x (km)', size = 12)
 plt.ylabel('z (km)', size = 12)
@@ -126,8 +126,8 @@ plt.tick_params(
     labelbottom=False)
 plt.grid(linestyle = '--', alpha = 0.3)
 for i in range(len(seismogram_list)):
-    seismogram_list[i], = plt.plot([], [], '-k')
-    plt.plot(plot_spacing*i, 0, 'vb', markersize=20)
+    seismogram_list[i], = plt.plot([], [], '-k', linewidth=1)
+    plt.plot(plot_spacing*i, 0, 'vb', markersize=5, linewidth=1)
 
 plt.ylim(duration, 0)
 plt.xlim(-800, 5500)
@@ -146,6 +146,6 @@ def animate(i):
 
 anim = animation.FuncAnimation(
     fig, animate, frames=maxit / snapshots, interval=1)
-anim.save('p_wave_multi_geoph_BP_6.25m_1.mp4', fps=30, dpi=200, bitrate=4000)
+anim.save('p_wave_multi_geoph_Marmousi2_2.5m_100_geoph_2.mp4', fps=30, dpi=200, bitrate=4000)
 # anim # call the animation function
 # plt.show()
