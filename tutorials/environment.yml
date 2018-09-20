@@ -1,9 +1,0 @@
-dependencies:
-  - python=3.6
-  - numpy
-  - scipy
-  - matplotlib
-  - seaborn
-  - IPython
-  - pip:
-    - bruges
