@@ -140,11 +140,12 @@ def lfBackus(lb,freqs, test = False, log_plot = True, dt = 2e-4, f = 35):
         plt.figure(figsize=(15,10))
         for i in np.arange(len(lb)):
             plt.subplot(1,len(lb), i+1)
-            plt.plot(synth[i], twt[:-1], 'k', label = f"{lb[i]}m L' Synthetic")
-            plt.fill_betweenx(twt[:-1], 0, synth[i], where = synth[i] > 0, color = 'r', alpha = 0.7)
-            plt.fill_betweenx(twt[:-1], 0, synth[i], where = synth[i] < 0, color = 'b', alpha = 0.7)
+            for j in np.arange(0,0.4,0.1):
+                plt.plot(synth[i] + j, twt[:-1], 'k', label = f"{lb[i]}m L' Synthetic")
+                plt.fill_betweenx(twt[:-1], j, synth[i] + j, where = synth[i] > 0, color = 'r', alpha = 0.4)
+                plt.fill_betweenx(twt[:-1], j, synth[i] + j, where = synth[i] < 0, color = 'b', alpha = 0.4)
             plt.ylim(np.amin(twt) - 0.1, np.amax(twt) + 0.1)
-            plt.xlim(-0.3, 0.3)
+            # plt.xlim(-0.3, 0.3)
             plt.gca().invert_yaxis()
             plt.legend()
 
