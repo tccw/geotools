@@ -9,3 +9,5 @@ toys/p_wave_multi_geoph_BP_6.25m_1.mp4
 toys/data/vel_z6.25m_x12.5m_exact.segy.7z
 toys/data/vp_marmousi-ii.7z
 toys/data/vel_z6.25m_x12.5m_exact.segy.7z
+tutorials/.ipynb_checkpoints/FluidSubstitution-DR-checkpoint.ipynb
+tutorials/FluidSubstitution-DR.ipynb
