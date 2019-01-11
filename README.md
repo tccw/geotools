@@ -4,3 +4,5 @@ Mish-mash/hodgepodge/ragbag/patchwork of Ipython books for geoscience. Written m
 Tutorials with Binders set up:
 
 Fluid Substitution: [![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/tccw/geotools/master?filepath=tutorials%2FFluidSubstitution.ipynb)
+
+AVO tutorial: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tccw/geotools/master?filepath=%2Ftutorials%2FAVOtutorial.ipynb)
