@@ -1,10 +1,10 @@
-channels:
-- conda-forge
-- defaults
 dependencies:
-- python=3.6
-- numpy
-- scipy
-- pandas
-- matplotlib
-- IPython
+  - python=3.6
+  - numpy
+  - scipy
+  - matplotlib
+  - seaborn
+  - IPython
+  - pandas
+  - pip:
+    - bruges
