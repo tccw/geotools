@@ -34,3 +34,4 @@ tutorials/.ipynb_checkpoints/FluidSubstitution-DR-checkpoint.ipynb
 tutorials/FluidSubstitution-DR.ipynb
 9257225ec216e13ff184ed1eb0f0bee70b81496a
 toys/data/coal_well_vels_ft_s_m_depth_0_152399_7m_backus.npy
+toys/devito_WSL/.ipynb_checkpoints/velocity_building-checkpoint.ipynb
