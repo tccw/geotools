@@ -1,4 +1,4 @@
-
+ 
 """
 Uses the seismic package from Fatiando to create 2D finite difference
 models for wave propogation in different velocity fields.
